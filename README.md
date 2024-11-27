@@ -67,36 +67,3 @@ November 25, 2024 Resolved issues with year queries and search parameters. Chang
 
 November 24, 2024 Summary
 I created BookieMcRandom, soon to be renamed ProsePickerPlus. It randomly selects and displays text excerpts from over 28 million texts on Archive.orgdirectly to your terminal, allowing users to specify genre, author, and publication date to narrow down the randomization. This tool simplifies exploring Archive.orgdocuments, displaying book titles and authors after a snippet is shown.
-
-Initial Criteria Matching and Search Issues:
-Parameters like genre, author, date, words, and language weren't always working correctly.
-Length specification (e.g., "200words") needed to be properly implemented.
-Default language needed to be set to English.
-Selecting random text segments from books required improvement.
-Error Handling with HTTP Status Codes:
-Handling various HTTP status codes like 200 (OK) and 403 (Forbidden).
-Parsing and handling JSON responses from the API.
-Optional Arguments:
-Ensuring the script could handle optional arguments for genre, author, and date without causing errors.
-Generating General Queries:
-Handling cases where no parameters were provided to perform a generalized search.
-Filtering for Text Content:
-Ensuring the search was limited to text content (mediatype:texts) to avoid non-text results like images, videos, or software.
-Retry Mechanism:
-Implementing a retry mechanism to handle errors like 403 Forbidden and missing text files, and ensuring the script restarts the entire process to select new books upon failure.
-Date Range Handling:
-Correctly parsing and handling date ranges (e.g., "1810-1820") as well as single years.
-Including Book Title in Output:
-Ensuring the book title was included in the output along with the random text segment.
-Running Script as Executable:
-Issues with making the script executable and ensuring the shebang line was correctly recognized.
-Misinterpretation of the script as a shell script instead of a Python script.
-Fixing Syntax Error Near Unexpected Token:
-Resolving syntax errors due to trailing commas and ensuring correct function definitions.
-Ensuring Randomization:
-Confirming the script restarts from the beginning to select new books on retry, improving the chances of success.
-Removing Parameters and Starting Anew:
-Language and number of words parameters were removed because they did not work as intended.
-Specifying a genre in English returns text in English, while specifying a genre in another language, such as "aventure" in French, returns text in that language.
-Adding Punctuation:
-Included punctuation in the text segments to improve readability
