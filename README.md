@@ -1,27 +1,24 @@
 # LoomFinder
 LoomFinder is a Python program that retrieves random snippets from books hosted on the Internet Archive, offering users a chance to discover new reads effortlessly.
 
-wget https://github.com/yourusername/LoomFinder/loomfinder.py
+wget https://github.com/DaroHacka/LoomFinder/loomfinder.py
+
 Make the file executable:
-
-bash
 sudo chmod +x loomfinder.py
+
 Move it to a directory in your PATH:
-
-bash
 sudo mv loomfinder.py /usr/local/bin/loomfinder
-Run LoomFinder:
 
-bash
+Run loomfinder:
 loomfinder
 
-LoomFinder --help
-usage: LoomFinder [-h] [--save] [--list-genres [LIST_GENRES]] [--list-subjects [LIST_SUBJECTS]] [params ...]
+loomfinder --help
+usage: loomfinder [-h] [--save] [--list-genres [LIST_GENRES]] [--list-subjects [LIST_SUBJECTS]] [params ...]
 
-LoomFinder: A versatile text searching tool for Archive.org.
+loomfinder: A versatile text searching tool for Archive.org.
 Imagine entering a library containing over 28 million documents, you can see books everywhere around you,
 however you feel that the most inspiring books are in that particular direction, so you pick one up and
-read a random chapter. This is how LoomFinder works. Have a nice journey!
+read a random chapter. This is how loomfinder works. Have a nice journey!
 
 positional arguments:
   params                Search parameters: [t:title] [g:genre] [x:anything] [a:author] [s:subject] [d:date]
@@ -36,7 +33,7 @@ options:
 
 **Example usage:**
 
-LoomFinder g:adventure a:Tolkien d:1940-1950
+loomfinder g:adventure a:Tolkien d:1940-1950
 
 **Parameters:**
 
@@ -52,58 +49,58 @@ LoomFinder g:adventure a:Tolkien d:1940-1950
 You can omit any parameter by not including it in the command.
 For example, if you want to search only by genre and author, use:
 
-LoomFinder g:adventure a:Tolkien
+loomfinder g:adventure a:Tolkien
 
 **Listing genres and subjects:**
 
 If you need a list of genres or subjects for inspiration, please type:
 
-LoomFinder --list-genres
-LoomFinder --list-subjects
+loomfinder --list-genres
+loomfinder --list-subjects
 
 --------------------------
 November 27, 2024
 I needed to make a final adjustment to the help menu formatting and add more referential material to the --list-genres menu to help users who might experience a sudden lack of inspiration. By typing --list-genres, they can see a rich list of genres to customize their queries.
 Here’s how it works:
 If you don't know what to type, use the following commands:
-LoomFinder --list-genres
+loomfinder --list-genres
 or
-LoomFinder --list-subjects
+loomfinder --list-subjects
 A list will be printed, and you can use it in your query like this:
-LoomFinder g:genre (one of the genres listed)
+loomfinder g:genre (one of the genres listed)
 or
-LoomFinder s:subject (one of the subject listed)
+loomfinder s:subject (one of the subject listed)
 The code will then randomize the book or document, and randomize the extracted text. The text will be displayed on the screen along with the title and author (if available). If you like the displayed snippet and want another random excerpt from that book, change the parameters to t:title. If the title is too generic, you can add a:author. The text will then be derived directly from that specific book. If you decide to read the book, you can connect to Internet Archive and download it.
 
 November 26, 2024
-Finally, this is the last about BookieMcRandom, aka ProsePicker+, aka LoomFinder. This is the final version of my program, LoomFinder—a name I chose by combining one of my favorite films, Flight of the Navigator, which I believe influenced my mindset at a very early stage, and the LucasArts game. There will be no further upgrades, hopefully. 
+Finally, this is the last about BookieMcRandom, aka ProsePicker+, aka loomfinder. This is the final version of my program, loomfinder—a name I chose by combining one of my favorite films, Flight of the Navigator, which I believe influenced my mindset at a very early stage, and the LucasArts game. There will be no further upgrades, hopefully. 
 However, I made some modifications and I think it's better now, no need to add anything else.
-From time to time, I may want to randomize some Internet Archive queries just for fun. I have one final idea to perfect the randomization process, which involves selecting from a file filled with authors' names that cohesively belong to the literary world and applying one of those to the query automatically. You create your own selection of authors to have a more literature-consistent application. This method might solve the localization problem, as the Archive doesn’t localize books. By dividing authors into nationalities, we can achieve a more cultivated randomization. I could keep both programs—LoomFinder for a wilder randomization, and ProsePicker+ for selecting literary prose and poems. There’s no need to add authors manually, as there are many databases available online.
-However, I implemented LoomFinder by adding three new features:
-The idea of adding quotation marks to send a null field to the query on Internet Archive (see previous post) was inelegant. This method required placing empty quotation marks "" in place of an omitted criterion. For example: LoomFinder "" "Haruki Murakami" 1980-1990, where the empty "" is in place of genre but to state a null field is necessary to maintain the structure intact. I solved this issue with a more elegant solution by attributing a letter to each of these categories: t:title, g:genre, a:author, s:subject, d:date, so that the code understands what is what. This way, there's no need to write an empty ""—when the script sees that one of those t, g, x, a, s, d is missing, it sends a null value automatically. 
+From time to time, I may want to randomize some Internet Archive queries just for fun. I have one final idea to perfect the randomization process, which involves selecting from a file filled with authors' names that cohesively belong to the literary world and applying one of those to the query automatically. You create your own selection of authors to have a more literature-consistent application. This method might solve the localization problem, as the Archive doesn’t localize books. By dividing authors into nationalities, we can achieve a more cultivated randomization. I could keep both programs—loomfinder for a wilder randomization, and ProsePicker+ for selecting literary prose and poems. There’s no need to add authors manually, as there are many databases available online.
+However, I implemented loomfinder by adding three new features:
+The idea of adding quotation marks to send a null field to the query on Internet Archive (see previous post) was inelegant. This method required placing empty quotation marks "" in place of an omitted criterion. For example: loomfinder "" "Haruki Murakami" 1980-1990, where the empty "" is in place of genre but to state a null field is necessary to maintain the structure intact. I solved this issue with a more elegant solution by attributing a letter to each of these categories: t:title, g:genre, a:author, s:subject, d:date, so that the code understands what is what. This way, there's no need to write an empty ""—when the script sees that one of those t, g, x, a, s, d is missing, it sends a null value automatically. 
 Now you can type: 
 
-LoomFinder d:1990-2000
-LoomFinder t:"Norwegian Wood" 
-LoomFinder g:mistery d:1880-1900
-LoomFinder x:literature
+loomfinder d:1990-2000
+loomfinder t:"Norwegian Wood" 
+loomfinder g:mistery d:1880-1900
+loomfinder x:literature
 
 As you can see, I added three categories: t:title x:anything and s:subject. Sometimes we may want to randomize from a specific book, or we may want to address the randomization by adding a subject or just anything containing that word or couple of words. With the old solution, if I wanted to print only the subject, since there are five categories now, I had to manually add 4 empty "" like this: 
-LoomFinder "" "" "" s:"historical journals" "" 
+loomfinder "" "" "" s:"historical journals" "" 
 Now you can type: 
 
-LoomFinder s:epistolary
-LoomFinder x:history
+loomfinder s:epistolary
+loomfinder x:history
 Finally, I added a help section to serve as a reminder on how to use it, by somply typing 
-LoomFinder --help every time you need help. 
+loomfinder --help every time you need help. 
 
 I also added some samples to make a more inspired randomization. You can also print a list of detailed genres, subgenres, and subjects. You have to do it manually, pick what inspires you, and insert it in the query as shown from the screenshots below.
 So that's about all. I also set the default language to English to avoid getting results in all kinds of languages when no parameters are typed in, ensuring 100% randomization by only typing: 
-LoomFinder
+loomfinder
 I also addressed some errors in the script and added 50 more words to the printed out query. And that's about all I believe.
 --------------------------
 
-note: A user who tested this code found that running it without any parameters, simply by typing LoomFinder, resulted in a catalog of Power Plant Engineering entries and nothing else. I checked it myself by looking at my screenshots and trying again in the terminal. He was right. After some thought, I realized that I needed to randomize the default search within the script. By adding a comprehensive list of topics, genres, and formats, the script can now generate a randomized query when no specific criteria are provided, avoiding the issue of returning only Power Plant Engineering results. So I substituted the Pastebin link with version 1.3.1. Also, by modifying the script yourself, you can add as many other objects as you want to better randomize the default query.
+note: A user who tested this code found that running it without any parameters, simply by typing loomfinder, resulted in a catalog of Power Plant Engineering entries and nothing else. I checked it myself by looking at my screenshots and trying again in the terminal. He was right. After some thought, I realized that I needed to randomize the default search within the script. By adding a comprehensive list of topics, genres, and formats, the script can now generate a randomized query when no specific criteria are provided, avoiding the issue of returning only Power Plant Engineering results. So I substituted the Pastebin link with version 1.3.1. Also, by modifying the script yourself, you can add as many other objects as you want to better randomize the default query.
 edit: What I thought was g:genre was actually "search anything." However, I fixed it. Now, g:genre is truly the genre criterion for the search, while the x:anything criterion is useful because it allows for a general search. It’s like saying "find anything at all containing this word." This could be a single word in the title, a format, or a genre in a broad sense. Previously, x:anything was labeled as g:genre incorrectly, basically it was g:anything. With this correction, g:genre is now correctly identifying literary genres, which is great.
 
 November 25, 2024
