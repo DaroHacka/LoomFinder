@@ -212,7 +212,9 @@ read a random chapter. This is how loomfinder works. Have a nice journey!''',
         epilog='''
 **Example usage:**
 
-loomfinder g:adventure a:Tolkien d:1940-1950
+loomfinder a:"Emily Brontë" 
+loomfinder s:romance d:1800-1820
+loomfinder s:poetry d:1700-1750
 
 **Parameters:**
 
@@ -228,9 +230,9 @@ loomfinder g:adventure a:Tolkien d:1940-1950
 **Combining parameters:**
 
 You can omit any parameter by not including it in the command.
-For example, if you want to search only by genre and author, use:
+For example, if you want to search only by subject and author, use:
 
-loomfinder g:adventure a:Tolkien
+loomfinder s:novel a:"Charles Dickens"
 
 **Listing genres and subjects:**
 
@@ -243,12 +245,26 @@ loomfinder --list-subjects
     )
     parser.add_argument('params', nargs='*', help='Search parameters: [t:title] [g:genre] [x:anything] [a:author] [s:subject] [d:date]')
     parser.add_argument('--save', action='store_true', help='Save the output to a file')
-    parser.add_argument('--list-genres', nargs='?', const=True, help='List available genres or subgenres of a specific genre')
-    parser.add_argument('--list-subjects', nargs='?', const=True, help='List available subjects or specific subfields')
+    parser.add_argument('--list-genres', action='store_true', help='List available genres')
+    parser.add_argument('--list-subjects', action='store_true', help='List available subjects')
 
     args = parser.parse_args()
-    params = args.params
 
+    # List genres or subjects if requested
+    if args.list_genres:
+        print("Available genres:")
+        for genre in literature_genres:
+            print(f"- {genre}")
+        sys.exit(0)
+
+    if args.list_subjects:
+        print("Available subjects:")
+        for subject in other_subjects:
+            print(f"- {subject}")
+        sys.exit(0)
+
+    params = args.params
+    
     # Handling the prose parameter
     if 'prose' in params:
         author = get_random_saved_author()
@@ -307,20 +323,22 @@ loomfinder --list-subjects
             if args.save:
                 save_to_file(output)
                 print("Output saved to file.")
-            
-            # Prompt to save author at the end
-            try:
-                save_author_choice = input_with_timeout("Do you want to save the author's name? (yes/no): ", 10)
-                if save_author_choice and save_author_choice.lower() in ["yes", "y"]:
-                    save_author(author)
-                    print("Author's name saved.")
-                elif save_author_choice and save_author_choice.lower() in ["no", "n"]:
-                    print("Author's name not saved.")
-            except TimeoutExpired:
-                pass
+
+            # Prompt to save author at the end only if the author is not "Unknown Author"
+            if author.lower() != "unknown author":
+                try:
+                    save_author_choice = input_with_timeout("Do you want to save the author's name? (yes/y/no/n): ", 10)
+                    if save_author_choice and save_author_choice.lower() in ["yes", "y"]:
+                        save_author(author)
+                        print("Author's name saved.")
+                    elif save_author_choice and save_author_choice.lower() in ["no", "n"]:
+                        print("Author's name not saved.")
+                except TimeoutExpired:
+                    pass
 
         except Exception as e:
             print(e)
+
 
         #Author: Daniel Forster Levene: 
         #Date: November 25, 2024 Version: 1.4.1
