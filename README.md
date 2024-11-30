@@ -43,6 +43,8 @@ loomfinder g:adventure a:Tolkien d:1940-1950
 * a:author          The author of the book or text.
 * s:subject         The subject of the book or text.
 * d:date            The date or date range of the book or text.
+* prose             :loomfinder prose -> randomly select an author
+                    from a saved list when running with the prose parameter.
 
 **Combining parameters:**
 
@@ -57,6 +59,31 @@ If you need a list of genres or subjects for inspiration, please type:
 
 loomfinder --list-genres
 loomfinder --list-subjects
+
+---------------------------
+November 30, 2024 v. 1.4.0
+
+1. **Modifications to Archive.org Query URL**: Adjusted the query URL to fetch more results by modifying the parameter to `rows=1000&page=1`, giving us a better chance of getting relevant results and greatly increasing the rate of success.
+
+2. **Added New Literature Genres**: Expanded the list of literature genres to include more options. However the non-fiction subjects outnumber the literature genres almost five times so I thought of a weighted random selection.
+
+3. **Weighted Random Selection**: Implemented a weighted random selection giving literature genres an 80% chance more of being selected and other subjects a 20% chance. This rate can be changed any time, and genres and subjects added or removed.
+
+4. **Saving Author Names**: Added functionality to prompt you to save the author's name to a text file at the end of each execution. The User can either change the name of the file or directory by modifying the code. However to not place the user in the position of having to necessarily make a choice I included a 10 sec. timer after which the terminal ends program.
+
+5. **Handled Timeout for User Input**: Ensured the program correctly handles a 10-second timer for user input on whether to save the author's name.
+
+6. **Fetching Authors from Saved List**: Implemented a flag to randomly select an author from the saved list when running with the `prose` parameter. (loomfinder prose)
+
+7. **Included Saved Authors in Default Search**: Adjusted the default search to include saved authors. More chances in the future when many authors are added to the list. The User can add manually authors to the list if they wish.
+
+8. **Debugging and Fixes**:
+   - **Addressed Duplication and Placement Issues**: Ensured function definitions were outside of any `try` blocks and corrected duplicated definitions.
+   
+   - **Ensured Proper Execution Flow**: Fixed issues where the program continued executing additional queries after a valid result was fetched.
+
+9. **Enhancements**:
+   - **Allowing `yes/no` and `y/n` Inputs**: Updated the prompt to accept both full words (`yes`, `no`) and their shorter versions (`y`, `n`).
 
 --------------------------
 November 27, 2024 Updated help menu formatting and added more genres to the --list-genres menu for inspiration. Use loomfinder --list-genres or loomfinder --list-subjects to print lists and customize queries. Use t:title, g:genre, a:author, s:subject, and d:date to specify fields.
