@@ -222,7 +222,8 @@ loomfinder g:adventure a:Tolkien d:1940-1950
 * a:author          The author of the book or text.
 * s:subject         The subject of the book or text.
 * d:date            The date or date range of the book or text.
-* prose             :loomfinder prose -> randomly select an author from a saved list when running with the prose parameter.
+* prose             :loomfinder prose -> randomly select an author from 
+                    a saved list when running with the prose parameter.
 
 **Combining parameters:**
 
