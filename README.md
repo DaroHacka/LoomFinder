@@ -20,6 +20,19 @@ Imagine entering a library containing over 28 million documents, you can see boo
 however you feel that the most inspiring books are in that particular direction, so you pick one up and
 read a random chapter. This is how loomfinder works. Have a nice journey!
 
+Version 1.4.0 is way more stable than the previous one, and by simply modifying the rows in rows=1000&page=1 
+from 50 to 1000, the rate of success has increased noticeably.
+
+You can now save the author of your query. LoomFinder will ask you if you want to save the author or pass. 
+The advantage is that each time you save a new author to your text file, your list of authors will grow. Then 
+you can run loomfinder prose, and a random selection will be made from your text file and sent as a new query 
+to the Internet Archive.
+
+At the end of each query, LoomFinder will ask if you want to save the author, and you can either press 'y', 'n',
+or wait ten seconds after which the program will finalize. However, you may want to change the ten seconds to 
+sixty seconds if you want more time to evaluate whether the author is worth saving. Alternatively, if you are 
+more interested in having a more sprightly tool, so you can make many queries at once, you can leave it as is.
+
 positional arguments:
   params                Search parameters: [t:title] [g:genre] [x:anything] [a:author] [s:subject] [d:date]
 
