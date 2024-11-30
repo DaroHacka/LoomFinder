@@ -6,25 +6,50 @@ import argparse
 import re
 import sys
 import time
+import signal
+
+class TimeoutExpired(Exception):
+    pass
+
+def input_with_timeout(prompt, timeout):
+    def handler(signum, frame):
+        raise TimeoutExpired
+
+    signal.signal(signal.SIGALRM, handler)
+    signal.alarm(timeout)
+    try:
+        return input(prompt)
+    except TimeoutExpired:
+        print("\nNo response received. Program will end now.")
+    finally:
+        signal.alarm(0)
 
 # List of genres and subjects for random selection
-default_genres_subjects = [
-    'literature', 'novel', 'poem', 'fantasy', 'science_fiction', 'mystery', 'romance', 'horror', 'thriller',
-    'western', 'biography', 'history', 'self_help', 'travel', 'true_crime', 'biology', 'chemistry', 'physics',
+literature_genres = [
+    'literature', 'novel', 'poem', 'fantasy', 'science_fiction', 'mystery', 'romance', 'horror', 'thriller', 'western',
+    'historical_fiction', 'magical_realism', 'satire', 'adventure', 'young_adult', 'graphic_novels', 'urban_fantasy',
+    'epic_fantasy', 'dystopian', 'steampunk', 'detective_fiction', 'psychological_thriller', 'paranormal_romance',
+    'space_opera', 'cyberpunk'
+]
+
+other_subjects = [
+    'biography', 'history', 'self_help', 'travel', 'true_crime', 'biology', 'chemistry', 'physics',
     'astronomy', 'earth_science', 'environmental_science', 'computer_science', 'engineering', 'medicine', 'ancient_history',
     'medieval_history', 'modern_history', 'archaeology', 'art_history', 'economic_history', 'political_history', 'social_history',
     'metaphysics', 'epistemology', 'ethics', 'logic', 'aesthetics', 'philosophy_of_science', 'philosophy_of_mind',
     'clinical_psychology', 'cognitive_psychology', 'developmental_psychology', 'social_psychology', 'neuropsychology',
     'clinical_psychiatry', 'forensic_psychiatry', 'child_psychiatry', 'geriatric_psychiatry', 'organic_chemistry',
     'inorganic_chemistry', 'physical_chemistry', 'biochemistry', 'botany', 'zoology', 'microbiology', 'genetics',
-    'classical_mechanics', 'quantum_mechanics', 'thermodynamics', 'electromagnetism', 'algebra', 'calculus', 'geometry', 'statistics'
+    'classical_mechanics', 'quantum_mechanics', 'thermodynamics', 'electromagnetism', 'algebra', 'calculus', 'geometry', 'statistics',
     'anthropology', 'sociology', 'paleontology', 'linguistics', 'mythology', 'numismatics', 'seismology', 'meteorology', 
     'crystallography', 'petrology', 'selenology', 'histology', 'cryogenics', 'entomology', 'protozoology', 'virology', 
     'bacteriology', 'cytology', 'immunology', 'hermeneutics', 'patristics', 'textology', 'syntax', 'semantics', 'phonology',
     'phonetics', 'philology', 'cartography', 'epigraphy', 'heraldry', 'lexicography', 'chronology', 'onomastics', 'aetiology',
     'graphology', 'apiculture', 'aquaculture', 'pisciculture', 'horticulture', 'herpetology', 'ichthyology', 'ornithology', 'mammalogy',
-    'helminthology', 'dipterology', 'acarology', 'zoology', 'botany', 'ornithology'
+    'helminthology', 'dipterology', 'acarology'
 ]
+
+default_genres_subjects = literature_genres + other_subjects
 
 # Function to build the query string
 def build_query_string(title=None, genre=None, anything=None, author=None, subject=None, start_date=None, end_date=None):
@@ -32,7 +57,7 @@ def build_query_string(title=None, genre=None, anything=None, author=None, subje
     
     # Select a random genre or subject if no criteria are provided
     if not title and not genre and not anything and not author and not subject and not start_date:
-        default_choice = random.choice(default_genres_subjects)
+        default_choice = get_weighted_random_choice()
         query.append(f'({default_choice})')
     
     if title:
@@ -84,7 +109,7 @@ def parse_parameters(params):
 def get_random_book(query_string, retry_limit=5):
     attempt = 0
     while attempt < retry_limit:
-        url = f"https://archive.org/advancedsearch.php?q={query_string}&fl[]=identifier&fl[]=title&fl[]=creator&rows=50&page=1&output=json"
+        url = f"https://archive.org/advancedsearch.php?q={query_string}&fl[]=identifier&fl[]=title&fl[]=creator&rows=1000&page=1&output=json"
         print(f"Query URL: {url}")  # Debugging print statement
 
         try:
@@ -92,7 +117,7 @@ def get_random_book(query_string, retry_limit=5):
             if response.status_code == 200:
                 books = response.json().get("response", {}).get("docs", [])
                 if books:
-                    return random.choice(books)
+                    return random.choice(books)  # Break out of the loop if a book is found
             elif response.status_code == 403:
                 print("403 Forbidden. Retrying...")
         except Exception as e:
@@ -134,7 +159,7 @@ def get_random_text_segment(book, retry_limit=5):
 
         text = response.text
         words = re.findall(r'\S+', text)  # Match non-whitespace sequences to preserve punctuation
-        num_words = 200  # Default to 100 words if not specified
+        num_words = 200  # Default to 200 words if not specified
         if len(words) < num_words:
             print("The book doesn't contain enough words. Retrying...")
             attempt += 1
@@ -150,25 +175,44 @@ def get_random_text_segment(book, retry_limit=5):
             end_index += 1
 
         author = book.get('creator', 'Unknown Author')
-        return book['title'], author, ' '.join(segment)
+        return book['title'], author, ' '.join(segment)  # Break out of the loop if a valid segment is found
     raise Exception("Failed to fetch valid text segment after multiple attempts.")
 
 # Function to save output to file
-def save_to_file(content, filename="LoomFinder_samples.txt"):
+def save_to_file(content, filename="loomfinder_samples.txt"):
     with open(filename, "a") as file:
         file.write(content + "\n\n")
 
-# Help Menu
+# Function to save author to file
+def save_author(author, filename="Authors_list.txt"):
+    with open(filename, "a") as file:
+        file.write(author + "\n")
+
+# Function to get a random author from the saved list
+def get_random_saved_author(filename="Authors_list.txt"):
+    try:
+        with open(filename, "r") as file:
+            authors = file.readlines()
+        return random.choice(authors).strip() if authors else None
+    except FileNotFoundError:
+        return None
+
+# Function to build weighted random choice
+def get_weighted_random_choice():
+    weights = [0.8 if genre in literature_genres else 0.2 for genre in default_genres_subjects]
+    return random.choices(default_genres_subjects, weights=weights, k=1)[0]
+
+# Main script
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description='''LoomFinder: A versatile text searching tool for Archive.org.
 Imagine entering a library containing over 28 million documents, you can see books everywhere around you,
 however you feel that the most inspiring books are in that particular direction, so you pick one up and
-read a random chapter. This is how LoomFinder works. Have a nice journey!''',
+read a random chapter. This is how loomfinder works. Have a nice journey!''',
         epilog='''
 **Example usage:**
 
-LoomFinder g:adventure a:Tolkien d:1940-1950
+loomfinder g:adventure a:Tolkien d:1940-1950
 
 **Parameters:**
 
@@ -178,20 +222,21 @@ LoomFinder g:adventure a:Tolkien d:1940-1950
 * a:author          The author of the book or text.
 * s:subject         The subject of the book or text.
 * d:date            The date or date range of the book or text.
+* prose             :loomfinder prose -> randomly select an author from a saved list when running with the prose parameter.
 
 **Combining parameters:**
 
 You can omit any parameter by not including it in the command.
 For example, if you want to search only by genre and author, use:
 
-LoomFinder g:adventure a:Tolkien
+loomfinder g:adventure a:Tolkien
 
 **Listing genres and subjects:**
 
 If you need a list of genres or subjects for inspiration, please type:
 
-LoomFinder --list-genres
-LoomFinder --list-subjects
+loomfinder --list-genres
+loomfinder --list-subjects
 ''',
         formatter_class=argparse.RawDescriptionHelpFormatter
     )
@@ -203,82 +248,79 @@ LoomFinder --list-subjects
     args = parser.parse_args()
     params = args.params
 
-    genres = {
-        "g:genre": {
-            "Fiction": ["Fantasy", "Science Fiction", "Mystery", "Romance", "Horror", "Thriller/Suspense", "Western", "Literary Fiction"],
-            "Nonfiction": ["Biography/Autobiography", "History", "Self-Help", "Travel", "True Crime"]
-        },
-        "s:subject": {
-            "Fantasy/Sci-Fi": ["Dark Fantasy", "Fairy Tales", "Space Opera", "Cyberpunk", "Dystopian", "Alternate History"],
-            "Classic Literature": ["Detective Fiction", "Hard-Boiled", "Historical Romance", "Contemporary Romance", "Paranormal Romance", "Romantic Comedy", "Gothic Horror", "Psychological Horror", "Supernatural Horror", "Crime Thriller", "Classic Literature", "Modernist Literature", "Postmodern Literature"]
-        }
-    }
+    # Handling the prose parameter
+    if 'prose' in params:
+        author = get_random_saved_author()
+        if not author:
+            print("No authors available in the saved list.")
+            sys.exit(0)
+        
+        # Update the query to use the random saved author
+        query_string = build_query_string(author=author)
+        print(f"Query String: {query_string}")  # Debugging print statement
 
-    # List genres or subjects if requested
-    if args.list_genres:
-        if args.list_genres is True:
-            print("Available genres and subjects:")
-            for category, subcategories in genres.items():
-                print(f"Try with {category}:")
-                for subcategory, subgenres in subcategories.items():
-                    print(f"- {subcategory}: {', '.join(subgenres)}")
-        else:
-            print(f"Available subgenres for {args.list_genres}: {', '.join(genres.get(args.list_genres, {}).get(args.list_genres, []))}")
-        sys.exit(0)
+        try:
+            book = get_random_book(query_string)
+            title, author, text_segment = get_random_text_segment(book)
+            output = f"Book Title: {title}\nAuthor: {author}\nRandom Text Segment: {text_segment}"
+            print(output)
 
-    subjects = {
-        "Scientific": ["Biology", "Chemistry", "Physics", "Astronomy", "Earth Sciences", "Environmental Science", "Computer Science", "Engineering", "Medicine"],
-        "Historical": ["Ancient History", "Medieval History", "Modern History", "Archaeology", "Art History", "Economic History", "Political History", "Social History"],
-        "Philosophy": ["Metaphysics", "Epistemology", "Ethics", "Logic", "Aesthetics", "Philosophy of Science", "Philosophy of Mind"],
-        "Psychology": ["Clinical Psychology", "Cognitive Psychology", "Developmental Psychology", "Social Psychology", "Neuropsychology"],
-        "Psychiatry": ["Clinical Psychiatry", "Forensic Psychiatry", "Child and Adolescent Psychiatry", "Geriatric Psychiatry"],
-        "Chemistry": ["Organic Chemistry", "Inorganic Chemistry", "Physical Chemistry", "Biochemistry"],
-        "Biology": ["Botany", "Zoology", "Microbiology", "Genetics"],
-        "Physics": ["Classical Mechanics", "Quantum Mechanics", "Thermodynamics", "Electromagnetism"],
-        "Math": ["Algebra", "Calculus", "Geometry", "Statistics"],
-        "Mediums": ["Scholarly Journals", "Trade Journals", "Magazines", "Newspapers", "Historical Journals", "Microfilm"]
-    }
+        except Exception as e:
+            print(e)
 
-    if args.list_subjects:
-        if args.list_subjects is True:
-            print("Available subjects:")
-            for subject, subfields in subjects.items():
-                print(f"{subject}: {', '.join(subfields)}")
-        else:
-            print(f"Available subfields for {args.list_subjects}: {', '.join(subjects.get(args.list_subjects, []))}")
-        sys.exit(0)
+    else:
+        # Existing logic for parsing parameters and building query
+        title, genre, anything, author, subject, date = parse_parameters(params)
 
-    # Parse parameters
-    title, genre, anything, author, subject, date = parse_parameters(params)
+        # Parse the date argument
+        start_date = end_date = None
+        if date:
+            if '-' in date:
+                start_date, end_date = date.split('-')
+                start_date += "-01-01"
+                end_date += "-12-31"
+            else:
+                start_date = date + "-01-01"
+                end_date = date + "-12-31"
 
-    # Parse the date argument
-    start_date = end_date = None
-    if date:
-        if '-' in date:
-            start_date, end_date = date.split('-')
-            start_date += "-01-01"
-            end_date += "-12-31"
-        else:
-            start_date = date + "-01-01"
-            end_date = date + "-12-31"
+        # Add authors from the saved list to default genres
+        saved_authors = []
+        try:
+            with open("Authors_list.txt", "r") as file:
+                saved_authors = [author.strip() for author in file.readlines()]
+        except FileNotFoundError:
+            pass
 
-    query_string = build_query_string(title=title, genre=genre, anything=anything, author=author, subject=subject, start_date=start_date, end_date=end_date)
-    print(f"Query String: {query_string}")  # Debugging print statement
+        if saved_authors:
+            default_genres_subjects += saved_authors
 
-    try:
-        book = get_random_book(query_string)
-        title, author, text_segment = get_random_text_segment(book)
-        output = f"Book Title: {title}\nAuthor: {author}\nRandom Text Segment: {text_segment}"
-        print(output)
+        query_string = build_query_string(title=title, genre=genre, anything=anything, author=author, subject=subject, start_date=start_date, end_date=end_date)
+        print(f"Query String: {query_string}")  # Debugging print statement
 
-        if args.save:
-            save_to_file(output)
-            print("Output saved to file.")
+        try:
+            book = get_random_book(query_string)
+            title, author, text_segment = get_random_text_segment(book)
+            output = f"Book Title: {title}\nAuthor: {author}\nRandom Text Segment: {text_segment}"
+            print(output)
 
-    except Exception as e:
-        print(e)
+            if args.save:
+                save_to_file(output)
+                print("Output saved to file.")
+            
+            # Prompt to save author at the end
+            try:
+                save_author_choice = input_with_timeout("Do you want to save the author's name? (yes/no): ", 10)
+                if save_author_choice and save_author_choice.lower() in ["yes", "y"]:
+                    save_author(author)
+                    print("Author's name saved.")
+                elif save_author_choice and save_author_choice.lower() in ["no", "n"]:
+                    print("Author's name not saved.")
+            except TimeoutExpired:
+                pass
 
+        except Exception as e:
+            print(e)
 
         #Author: Daniel Forster Levene: 
-        #Date: November 25, 2024 Version: 1.3.1
+        #Date: November 25, 2024 Version: 1.4.1
         #Contact: cdan_crystalblue01@outlook.com
